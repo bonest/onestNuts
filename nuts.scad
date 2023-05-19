@@ -1,6 +1,8 @@
 // Honest nuts. A library of ISO standardized nuts , and only nuts. 
 // From M2 -> M12 sizes
 
+use <onestShapes/circlegon.scad>;
+
 // Defined nuts sizes. Only whole nutnumbers are saved
 flatWidth = [0.0,       // M0 - Not supported
              0.0,       // M1 - Not supported
@@ -33,41 +35,39 @@ cornerWidth = [0.0,     // M0 - Not supported
 // thickness numbers are wrong. I need a better caliber to test it. 
 thickness   = [0.0,     // M0 - Not supported
                0.0,     // M1 - Not supported
-               4.62,    // M2
-               6.35,    // M3
-               8.08,    // M4
-               9.24,    // M5
-               11.55,   // M6
+               1.6,     // M2
+               2.4,     // M3
+               3.2,     // M4
+               4.0,     // M5
+               5.0,     // M6
                0.0,     // M7 - Does not exist
-               15.01,   // M8
+               6.5,     // M8
                0.0,     // M9 - Does not exist
-               18.48,   // M10
+               8.0,     // M10
                0.0,     // M11 - Does not exist
-               20.78];  // M12
+               10.0];   // M12
 
-n = 6;
-radius = 20;
-function point(r, a) = [r*cos(a), r*sin(a)];
-function reg_poly_points(n) = 
-[for (i = [0:360/n:360-1]) point(radius, i)];
-echo(reg_poly_points(n));
-polygon(reg_poly_points(n));
 
+
+// A baseNut is the basis of the nut without holes or anything else 
 module baseNut(mSize)
 {
     if (mSize > 0 && mSize <= 12)
     {
-        /*
-        function point(r, a) = [r*cos(a), r*sin(a)];
-        n = 6;
-        radius = 20; // /cornerWidth[mSize] / 2;
+        linear_extrude(height = thickness[mSize]) {
+            circlegon(numSides = 6, radius = cornerWidth[mSize]/2);
+        } 
         
-        function reg_poly_points(n) = [for (i = [0:360/n:360-1]) point(radius, i)];
-        echo(reg_poly_points(n));
-        polygon(reg_poly_points(n));
-        //circle(r = cornerWidth[mSize] / 2);
-        */
     }
 }               
 
-baseNut(12);
+// A nutCutOut can be used to cut out material where the nut thicknes is cut out plus a cylinder 
+// given by the depth parameter to be used in a difference command.
+module nutCutOut(mSize, depth)
+{
+    // The base nut
+    baseNut(mSize = mSize);
+
+    // Create the cut out cylinder
+    cylinder(h= depth, r=mSize / 2, $fn=50);
+}
